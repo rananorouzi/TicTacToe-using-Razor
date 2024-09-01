@@ -25,7 +25,6 @@
     private string turnLabel = "";
 
     readonly private List<int[]> matches = [];
-    //private int gameClicks = 0;
 
     private string[] state = ["","","","","","","","","",""];
     public static string globalState = "X";
@@ -92,11 +91,13 @@
 
     public void ResetGame()
     {
+        gameClicks = 0;
         for (int i = 0; i < 9; ++i) {
             disabled[i] = false;
             state[i] = "";
             buttonStyle[i] = "btn btn-primary gameButtons";
         }
+        winnerLabel = "";
         UpdateTurnLabel();
     }
 
