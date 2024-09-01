@@ -1,3 +1,7 @@
-*.cs linguist-detectable=true
+*.css linguist-detectable=false
+*.razor linguist-language=c#
+*.cs linguist-language=C#
+
+
 
 
