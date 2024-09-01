@@ -1,0 +1,130 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+<div>
+    <span class="winnerStyle">@winnerLabel</span>
+    <button @onclick="() => ResetGame()" class="btn btn-primary floatRight">Reset</button>
+</div>
+<table class="board">
+     @for(int i=0; i< 3; i++)
+        {
+            <tr>
+            @for(int j=0; j< 3; j++){
+                int idx = (i*3)+j;
+                <td><button disabled=@disabled[idx] class=@buttonStyle[idx] @onclick="()=> Play(idx)">@state[idx]</button></td>
+            }
+            </tr>
+        }
+</table>
+<div class="turnStyle">
+    @turnLabel
+</div>
+@code {
+    private string winnerLabel = "";
+    private string turnLabel = "";
+
+    readonly private List<int[]> matches = [];
+    //private int gameClicks = 0;
+
+    private string[] state = ["","","","","","","","","",""];
+    public static string globalState = "X";
+    private List<bool> disabled = [false,false,false,false,false,false,false,false,false];
+    private List<string> buttonStyle = [];
+
+    private int gameClicks = 0;
+
+    public Home() {
+        for(int i = 0; i< 9; ++i)
+            buttonStyle.Add("");
+        InitializeMatches();
+        ResetGame();
+    }
+    private void InitializeMatches()
+    {
+        for (int x = 0; x < 3; ++x)
+        {
+            int baseHorizontal = x * 3;
+            int baseVertical = x;
+            int[] rowIndexes = new int[3];
+            int[] colIndexes = new int[3];
+            for (int y = 0; y < 3; ++y)
+            {
+                int rowIndex = baseHorizontal + y;
+                int colIndex = baseVertical + y * 3;
+                rowIndexes[y] = rowIndex;
+                colIndexes[y] = colIndex;
+            }
+            matches.Add(rowIndexes);
+            matches.Add(colIndexes);
+        }
+        matches.Add([0, 4, 8]);
+        matches.Add([2, 4, 6]);
+    }
+    private bool TripleWins(int[] selection)
+    {
+        string expectedState = "";
+        for (int item = 0; item < 3; ++item) {
+            string itemState = state[selection[item]];
+
+            if (itemState == "")
+                return false;
+
+            if (item == 0)
+                expectedState = itemState;
+            else if (itemState != expectedState)
+                return false;
+        }
+        return true;
+    }
+
+    private void UpdateTurnLabel() {
+        turnLabel = globalState + "'s turn";
+    }
+
+    public void Play(int idx) {
+        state[idx] = globalState;
+        globalState = globalState == "X" ? "O" : "X";
+        disabled[idx] = true;
+        UpdateTurnLabel();
+        CheckMatchState();
+    }
+
+    public void ResetGame()
+    {
+        for (int i = 0; i < 9; ++i) {
+            disabled[i] = false;
+            state[i] = "";
+            buttonStyle[i] = "btn btn-primary gameButtons";
+        }
+        UpdateTurnLabel();
+    }
+
+    public void MarkAsWin(int idx) {
+        buttonStyle[idx] = "btn winnerButtonStyle gameButtons";
+    }
+    public void CheckMatchState() {
+        if (++gameClicks >= 5) {
+            foreach (int[] triple in matches) {
+                if (TripleWins(triple)) {
+                    foreach (int idx in triple)
+                        MarkAsWin(idx);
+
+                    for (int i = 0; i < 9; ++i)
+                        disabled[i] = true;
+
+                    string winner = state[triple[0]];
+                    winnerLabel = winner + " Wins";
+                    turnLabel = "";
+                    return;
+                }
+            }
+        }
+
+        if (gameClicks == 9) {
+            winnerLabel = "No one wins";
+            turnLabel = "";
+            return;
+        }
+    }
+}
